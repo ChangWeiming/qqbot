@@ -205,28 +205,41 @@ func OverdueDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI) error {
 	return nil
 }
 
-//UserOverdueDDL send failed ddl of certain user (mysb)
-func UserOverdueDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error {
-	mapResult, err := ConnectWithServer(upd, bot, constant.UserFAILED, constant.QQToName[QQ])
+//UserRecentDDL returns recent ddls of certain users (myddl)
+func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error {
+	mapResult, err := ConnectWithServer(upd, bot, constant.UserRECENT, constant.QQToName[QQ])
 	if err != nil {
 		log.Print(err)
 		return err
 	}
+
 	detailInter, rowCount := GetDetail(upd, bot, mapResult)
 
 	msg := bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type)
 	var msgSender *qqbotapi.FlatSender = msg.FlatSender
 	if rowCount != 0 {
-		msgSender = msgSender.Text("哈哈！昨天失败了吧")
+		msgSender = msgSender.Text("gkd！别天天颓了！！！")
 	} else {
-		msgSender = msgSender.Text("今天干的还行，你今天不xx了")
+		msgSender = msgSender.Text("快去给自己整活去！")
 	}
 
 	msgSender = msgSender.NewLine().At(QQ).NewLine()
 	for i := 0; i < rowCount; i++ {
 		detail := detailInter[i].(map[string]interface{})
 		//fmt.Print(reflect.TypeOf(mapResult["progress"]))
+		ddlTime, _ := time.Parse("2006-01-02", detail["deadline"].(string))
+		ddlTime = ddlTime.UTC().Local().Add(16 * time.Hour)
+		gap := ddlTime.Sub(time.Now()).Hours() 
+
+		var dateMsg string
+		if gap > 0 {
+			dateMsg = fmt.Sprint((int)(gap/24)+1)+"天"
+		} else {
+			dateMsg = fmt.Sprint((int)(gap/24)-1)+"天"
+		}
+
 		msgSender = msgSender.Text(detail["description"].(string)).
+			Text(" | ").Text(dateMsg).
 			Text(" | ").Text(detail["completed_parts"].(string) + "/" + detail["total_parts"].(string)).
 			Text(fmt.Sprintf("[%s]", detail["progress"].(string)))
 		if i != rowCount-1 {
