@@ -15,10 +15,18 @@ const (
 	UserRECENT
 	//UserFAILED means MOD certain user's failed ddl today
 	UserFAILED
+	//AddDDL means MOD add ones ddl
+	AddDDL
 )
 
 //ServerName JZDK server
 const ServerName string = "https://test.example.com/api/"
+
+//AlertGroup group that is to be sent ddls regularly
+const AlertGroup int64 = 123456789
+
+//Timepoint time that sends dlls
+var Timepoint = [...]int{10, 14, 18, 22}
 
 //NameToQQ mapping JZDK ID to QQ number
 var NameToQQ map[string]string = map[string]string{
@@ -27,5 +35,5 @@ var NameToQQ map[string]string = map[string]string{
 
 //QQToName mapping QQ number to JZDK ID
 var QQToName map[string]string = map[string]string{
-	"123456789":  "test",
+	"123456789": "test",
 }
