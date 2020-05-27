@@ -28,6 +28,10 @@ func ConnectWithServer(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, mod constant.
 		php = "user_upcoming_ddl.php"
 	case constant.AddDDL:
 		php = "add_ddl.php"
+	case constant.FinishDDL:
+		php = "qfinish_ddl.php"
+	case constant.DeleteDDL:
+		php = "del_ddl.php"
 	}
 
 	var resp *http.Response

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"qqbot/src/command"
+	"qqbot/src/constant"
 
 	qqbotapi "github.com/catsworld/qq-bot-api"
 )
@@ -71,11 +72,20 @@ func main() {
 				bot.NewMessage(update.Message.Chat.ID, update.Message.Chat.Type).At(mp[orin]).NewLine().Text("binded with name " + orin).Send()
 			} else
 		*/
-		if len(update.Message.Text) >= 8 && len(update.Message.Text) <= 100 {
+		strLen := len(update.Message.Text)
+		if strLen >= 8 {
 			if update.Message.Text[0:4] == "!add" || update.Message.Text[0:6] == "！add" {
 				command.AddUserDDL(&update, bot, fmt.Sprint(update.Message.From.ID))
 			}
+			if update.Message.Text[0:6] == "!check" || update.Message.Text[0:8] == "！check" {
+				command.OperateDDL(&update, bot, constant.AddDDL)
+			}
 		}
 
+		if strLen >= 7 {
+			if update.Message.Text[0:4] == "!del" || update.Message.Text[0:6] == "！del" {
+				command.OperateDDL(&update, bot, constant.DeleteDDL)
+			}
+		}
 	}
 }

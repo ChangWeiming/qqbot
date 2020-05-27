@@ -46,7 +46,7 @@ func UserOverdueDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error
 
 //UserRecentDDL returns recent ddls of certain users (myddl)
 func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error {
-	params := url.Values{"username": {constant.QQToName[QQ]}}
+	params := url.Values{"username": {constant.QQToName[QQ]}, "limit": {"10000000"}}
 	mapResult, err := ConnectWithServer(upd, bot, constant.UserRECENT, params)
 	if err != nil {
 		log.Print(err)
@@ -61,6 +61,8 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 		msgSender = msgSender.Text("gkd！别天天颓了！！！")
 	} else {
 		msgSender = msgSender.Text("快去给自己整活去！")
+		msgSender.At(QQ).Send()
+		return nil
 	}
 
 	msgSender = msgSender.NewLine().At(QQ).NewLine()
@@ -78,7 +80,8 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 			dateMsg = fmt.Sprint((int)(gap/24)-1) + "天"
 		}
 
-		msgSender = msgSender.Text(detail["description"].(string)).
+		msgSender = msgSender.Text(detail["ddlid"].(string)).Text(" | ").
+			Text(detail["description"].(string)).
 			Text(" | ").Text(dateMsg).
 			Text(" | ").Text(detail["completed_parts"].(string) + "/" + detail["total_parts"].(string)).
 			Text(fmt.Sprintf("[%s]", detail["progress"].(string)))
@@ -88,6 +91,48 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 	}
 	msgSender.Send()
 	return nil
+}
+
+//OperateDDL operate certain ddl with ddlID
+func OperateDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, cmd constant.MOD) {
+	QQ := fmt.Sprint(upd.Message.From.ID)
+	nameCalled := constant.QQToName[QQ]
+	params := url.Values{"username": {nameCalled}}
+
+	msg := bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type)
+	var msgSender *qqbotapi.FlatSender = msg.FlatSender
+
+	var opt, ddlid string
+	fmt.Sscanf(upd.Message.Text, "%s %s", &opt, &ddlid)
+
+	var optStr string
+	if cmd == constant.DeleteDDL {
+		optStr = "del"
+	} else {
+		optStr = "check"
+	}
+
+	if (opt != "!"+optStr) && (opt != "！"+optStr) {
+		msgSender.At(QQ).Text("命令8对吧，是8是没加空格？").Send()
+		return
+	}
+
+	if ddlid == "" {
+		msgSender.At(QQ).Text("没得ddlid").Send()
+		return
+	}
+
+	params["ddlid"] = []string{ddlid}
+	mapResult, err := ConnectWithServer(upd, bot, constant.FinishDDL, params)
+
+	if err != nil {
+		msgSender.At(QQ).Text(fmt.Sprint(err)).Send()
+		return
+	}
+
+	if mapResult["result"] != nil && mapResult["result"].(string) == "success" {
+		msgSender.At(QQ).Text("没想到吧，成了！！").Send()
+	}
 }
 
 //TimerSender sets clock to send ddls regularly

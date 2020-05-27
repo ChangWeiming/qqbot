@@ -17,6 +17,10 @@ const (
 	UserFAILED
 	//AddDDL means MOD add ones ddl
 	AddDDL
+	//FinishDDL means MOD finish ddl
+	FinishDDL
+	//DeleteDDL means MOD finish ddl
+	DeleteDDL
 )
 
 //ServerName JZDK server
