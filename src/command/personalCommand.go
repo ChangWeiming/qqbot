@@ -132,6 +132,8 @@ func OperateDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, cmd constant.MOD) {
 
 	if mapResult["result"] != nil && mapResult["result"].(string) == "success" {
 		msgSender.At(QQ).Text("没想到吧，成了！！").Send()
+	} else {
+		msgSender.At(QQ).Text("没想到吧，它没成，检查一下ddlID口巴！").Send()
 	}
 }
 
