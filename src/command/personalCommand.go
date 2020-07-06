@@ -66,6 +66,9 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 	}
 
 	msgSender = msgSender.NewLine().At(QQ).NewLine()
+	overdues := make([]map[string]interface{}, rowCount)
+	cnt := 0
+
 	for i := 0; i < rowCount; i++ {
 		detail := detailInter[i].(map[string]interface{})
 		//fmt.Print(reflect.TypeOf(mapResult["progress"]))
@@ -74,9 +77,16 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 		gap := ddlTime.Sub(time.Now()).Hours()
 
 		var dateMsg string
+
 		if gap > 0 {
 			dateMsg = fmt.Sprint((int)(gap/24)+1) + "天"
 		} else {
+			if (int)(gap/24)-1 < -7 {
+				detail["dateMsg"] = fmt.Sprint((int)(gap/24)-1) + "天"
+				overdues[cnt] = detail
+				cnt++
+				continue
+			}
 			dateMsg = fmt.Sprint((int)(gap/24)-1) + "天"
 		}
 
@@ -84,12 +94,28 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 			Text(detail["description"].(string)).
 			Text(" | ").Text(dateMsg).
 			Text(" | ").Text(detail["completed_parts"].(string) + "/" + detail["total_parts"].(string)).
-			Text(fmt.Sprintf("[%s]", detail["progress"].(string)))
-		if i != rowCount-1 {
-			msgSender = msgSender.NewLine()
+			Text(fmt.Sprintf("[%s]", detail["progress"].(string))).NewLine()
+	}
+
+	if cnt != 0 {
+		msgSender = msgSender.Text("超过7天未操作的ddl如下：").NewLine()
+		for i := 0; i < cnt; i++ {
+			msgSender = msgSender.Text(overdues[i]["ddlid"].(string)).Text(" | ").
+				Text(overdues[i]["description"].(string)).
+				Text(" | ").Text(overdues[i]["dateMsg"].(string)).
+				Text(" | ").Text(overdues[i]["completed_parts"].(string) + "/" + overdues[i]["total_parts"].(string)).
+				Text(fmt.Sprintf("[%s]", overdues[i]["progress"].(string))).NewLine()
+
+			ConnectWithServerWithoutMessage(constant.DeleteDDL,
+				url.Values{
+					"ddlid":    []string{overdues[i]["ddlid"].(string)},
+					"username": []string{constant.QQToName[QQ]},
+				})
 		}
 	}
-	msgSender.Send()
+
+	msgSender.Text("超过7天未打卡的ddl将会被清理！").Send()
+
 	return nil
 }
 

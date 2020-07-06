@@ -2,6 +2,7 @@ package command
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,6 +15,19 @@ import (
 
 //ConnectWithServer connects with api server
 func ConnectWithServer(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, mod constant.MOD, params url.Values) (map[string]interface{}, error) {
+
+	mapResult, err := ConnectWithServerWithoutMessage(mod, params)
+	if err != nil {
+		bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type).Text("JZDKServer returns " + fmt.Sprint(err)).Send()
+		return nil, err
+	}
+
+	log.Print(mapResult)
+	return mapResult, nil
+}
+
+//ConnectWithServerWithoutMessage connects with api of jzdk server without sending messages.
+func ConnectWithServerWithoutMessage(mod constant.MOD, params url.Values) (map[string]interface{}, error) {
 	php := ""
 	switch mod {
 	case constant.FAILED:
@@ -44,18 +58,15 @@ func ConnectWithServer(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, mod constant.
 		resp, err = http.PostForm(constant.ServerName+php,
 			params)
 	}
-
 	if err != nil {
-		bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type).Text("JZDKServer returns " + fmt.Sprint(err)).Send()
 		return nil, err
 	}
 
-	if resp.Status != "200 OK" {
-		tmp, _ := ioutil.ReadAll(resp.Body)
-		bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type).Text("JZDKServer returns " + resp.Status + string(tmp)).Send()
-		return nil, nil
-	}
 	defer resp.Body.Close()
+
+	if resp.Status != "200 OK" {
+		return nil, errors.New(resp.Status)
+	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
 	var mapResult map[string]interface{}
@@ -65,6 +76,5 @@ func ConnectWithServer(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, mod constant.
 		return nil, err
 	}
 
-	log.Print(mapResult)
 	return mapResult, nil
 }
