@@ -46,6 +46,8 @@ func ConnectWithServerWithoutMessage(mod constant.MOD, params url.Values) (map[s
 		php = "qfinish_ddl.php"
 	case constant.DeleteDDL:
 		php = "del_ddl.php"
+	case constant.FailDDL:
+		php = "qfail_ddl.php"
 	}
 
 	var resp *http.Response
@@ -54,6 +56,7 @@ func ConnectWithServerWithoutMessage(mod constant.MOD, params url.Values) (map[s
 		resp, err = http.PostForm(constant.ServerName+php,
 			url.Values{"auth_key": {"513106c051f94528f1d386926aa65e1a"}})
 	} else {
+		fmt.Print(params, php)
 		params["auth_key"] = []string{"513106c051f94528f1d386926aa65e1a"}
 		resp, err = http.PostForm(constant.ServerName+php,
 			params)

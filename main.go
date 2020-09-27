@@ -21,7 +21,7 @@ func main() {
 	u := qqbotapi.NewWebhook("/")
 	u.PreloadUserInfo = true
 	updates := bot.ListenForWebhook(u)
-	go http.ListenAndServe("localhost:2333", nil)
+	go http.ListenAndServe("localhost:12345", nil)
 	go command.TimerSender(bot)
 
 	for update := range updates {
@@ -78,13 +78,18 @@ func main() {
 				command.AddUserDDL(&update, bot, fmt.Sprint(update.Message.From.ID))
 			}
 			if update.Message.Text[0:6] == "!check" || update.Message.Text[0:8] == "！check" {
-				command.OperateDDL(&update, bot, constant.AddDDL)
+				command.OperateDDL(&update, bot, constant.FinishDDL)
 			}
 		}
 
 		if strLen >= 7 {
 			if update.Message.Text[0:4] == "!del" || update.Message.Text[0:6] == "！del" {
 				command.OperateDDL(&update, bot, constant.DeleteDDL)
+			}
+		}
+		if strLen >= 9 {
+			if update.Message.Text[0:7] == "!mkfail" || update.Message.Text[0:9] == "！mkfail" {
+				command.OperateDDL(&update, bot, constant.FailDDL)
 			}
 		}
 	}

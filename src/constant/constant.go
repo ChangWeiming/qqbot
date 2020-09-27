@@ -21,6 +21,8 @@ const (
 	FinishDDL
 	//DeleteDDL means MOD finish ddl
 	DeleteDDL
+	//FailDDL means MOD fail DDL
+	FailDDL
 )
 
 //ServerName JZDK server

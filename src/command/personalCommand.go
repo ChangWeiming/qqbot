@@ -26,7 +26,7 @@ func UserOverdueDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error
 	if rowCount != 0 {
 		msgSender = msgSender.Text("哈哈！昨天失败了吧")
 	} else {
-		msgSender = msgSender.Text("今天干的还行，你今天不xx了")
+		msgSender = msgSender.Text("今天干的还行，你今天不sb了")
 	}
 
 	msgSender = msgSender.NewLine().At(QQ).NewLine()
@@ -106,7 +106,7 @@ func UserRecentDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, QQ string) error 
 				Text(" | ").Text(overdues[i]["completed_parts"].(string) + "/" + overdues[i]["total_parts"].(string)).
 				Text(fmt.Sprintf("[%s]", overdues[i]["progress"].(string))).NewLine()
 
-			ConnectWithServerWithoutMessage(constant.DeleteDDL,
+			ConnectWithServerWithoutMessage(constant.FailDDL,
 				url.Values{
 					"ddlid":    []string{overdues[i]["ddlid"].(string)},
 					"username": []string{constant.QQToName[QQ]},
@@ -134,11 +134,14 @@ func OperateDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, cmd constant.MOD) {
 	var optStr string
 	if cmd == constant.DeleteDDL {
 		optStr = "del"
+	} else if cmd == constant.FailDDL {
+		optStr = "mkfail"
 	} else {
 		optStr = "check"
 	}
 
 	if (opt != "!"+optStr) && (opt != "！"+optStr) {
+		fmt.Printf("%v\n", opt)
 		msgSender.At(QQ).Text("命令8对吧，是8是没加空格？").Send()
 		return
 	}
@@ -149,7 +152,7 @@ func OperateDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, cmd constant.MOD) {
 	}
 
 	params["ddlid"] = []string{ddlid}
-	mapResult, err := ConnectWithServer(upd, bot, constant.FinishDDL, params)
+	mapResult, err := ConnectWithServer(upd, bot, cmd, params)
 
 	if err != nil {
 		msgSender.At(QQ).Text(fmt.Sprint(err)).Send()
@@ -157,9 +160,14 @@ func OperateDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI, cmd constant.MOD) {
 	}
 
 	if mapResult["result"] != nil && mapResult["result"].(string) == "success" {
-		msgSender.At(QQ).Text("没想到吧，成了！！").Send()
+		msgSender.At(QQ).Text("成力成力!").Send()
 	} else {
-		msgSender.At(QQ).Text("没想到吧，它没成，检查一下ddlID口巴！").Send()
+		if mapResult["message"] != nil {
+			msgSender.At(QQ).Text("没想到吧，没成，检查一下ddlID口巴！").NewLine().
+				Text(mapResult["message"].(string)).Send()
+		} else {
+			msgSender.At(QQ).Text("没想到吧，没成，检查一下ddlID口巴！").Send()
+		}
 	}
 }
 
@@ -182,6 +190,7 @@ func TimerSender(bot *qqbotapi.BotAPI) {
 				UserRecentDDL(upd, bot, v)
 			}
 			p = (p + 1) % 4
+			time.Sleep(time.Second * 3600)
 		}
 	}
 }

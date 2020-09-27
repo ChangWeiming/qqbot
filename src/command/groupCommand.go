@@ -131,6 +131,7 @@ func OverdueDDL(upd *qqbotapi.Update, bot *qqbotapi.BotAPI) error {
 func UsageHelp(upd *qqbotapi.Update, bot *qqbotapi.BotAPI) {
 	msg := bot.NewMessage(upd.Message.Chat.ID, upd.Message.Chat.Type)
 	var msgSender *qqbotapi.FlatSender = msg.FlatSender
+
 	msgSender.Text("!help 帮助").NewLine().
 		Text("!myddl 查看自己的ddl").NewLine().
 		Text("!mysb 查看自己的失败ddl").NewLine().
@@ -140,6 +141,7 @@ func UsageHelp(upd *qqbotapi.Update, bot *qqbotapi.BotAPI) {
 		Text("!ping 判断机器人挂了没").NewLine().
 		Text("!add dates description [priority] [totoal parts]添加ddl 方框表示可选项（可倒序缺失），空格分开，dates两种格式一个是日期20200101或者1表示1天后即当日凌晨之前").NewLine().
 		Text("!check ddlID 打卡编号为ddlID的ddl").NewLine().
-		Text("!del ddlID 删除编号为ddlID的ddl").
+		Text("!del ddlID 删除编号为ddlID的ddl").NewLine().
+		Text("!mkfail ddlID 使编号为ddlID的ddl失败").
 		Send()
 }
